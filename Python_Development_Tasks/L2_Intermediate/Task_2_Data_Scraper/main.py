@@ -16,7 +16,7 @@ directory = Path("data")
 file_path = directory / f"{datetime.now().strftime('%Y-%m-%d-%H-%M')}_scraped_data.csv"
 # print(file_path)
 
-proxie_auth = os.getenv("proxie_auth")
+proxie_auth = os.getenv("PROXIE_AUTH")
 
 url = "https://www.kalerkantho.com/special/recent"
 
@@ -36,20 +36,24 @@ time.sleep(2)
 response = session.get(url=url, proxies=proxie, headers=header)
 # print(response.status_code, "hi")
 
-result = response.text 
+if response.status_code == 200:
 
-soup = BeautifulSoup(result, "html.parser")
-titles = soup.find_all("h5", class_="card-title")
-source = soup.find_all("span", class_="text-dangers")
+    result = response.text 
 
-# for title in titles:
-#     print(title.text.strip())
+    soup = BeautifulSoup(result, "html.parser")
+    titles = soup.find_all("h5", class_="card-title")
+    source = soup.find_all("span", class_="text-dangers")
 
-with open(file_path, "w") as f:
-    writer = csv.writer(f)
-    writer.writerow(["Title", "Source"])
-    for i, title in enumerate(titles):
-        writer.writerow([title.text.strip(), source[i].text.strip() if i < len(source) else "N/A"])
+    # for title in titles:
+    #     print(title.text.strip())
 
+    with open(file_path, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Title", "Source"])
+        for i, title in enumerate(titles):
+            writer.writerow([title.text.strip(), source[i].text.strip() if i < len(source) else "N/A"])
 
-print(f"Data has been successfully scraped and saved to {file_path}")
+    print(f"Data has been successfully scraped and saved to {file_path}")
+
+else:
+    print(f"Failed to retrieve data. Status code: {response.status_code}")
